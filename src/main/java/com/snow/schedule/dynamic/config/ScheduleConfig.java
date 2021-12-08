@@ -36,9 +36,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
         // 配置多线程
         taskRegistrar.setScheduler(Executors.newScheduledThreadPool(5));
         this.scheduledTaskRegistrar = taskRegistrar;
-
         LambdaQueryWrapper<ScheduleConfigEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ScheduleConfigEntity::getStatus,1);
         List<ScheduleConfigEntity> list = scheduleConfigMapper.selectList(queryWrapper);
         list.forEach(i->{
             MyScheduleTask task = getTask(i);
@@ -48,7 +46,6 @@ public class ScheduleConfig implements SchedulingConfigurer {
                     triggerContext -> new CronTrigger(task.getCron()).nextExecutionTime(triggerContext)
             );
         });
-        System.out.println("success");
     }
 
     private MyScheduleTask getTask(ScheduleConfigEntity entity) {

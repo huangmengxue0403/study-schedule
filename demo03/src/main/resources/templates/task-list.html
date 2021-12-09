@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>定时任务测试</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<style type="text/css">
+    body {
+        width: 80%;
+        text-align: center;
+        margin: auto;
+    }
+
+    table {
+        text-align: center;
+        width: 100%;
+    }
+
+    a {
+        border: 1px black solid;
+        color: white;
+        margin: 3px;
+        background-color: cornflowerblue;
+    }
+</style>
+<body>
+<h1>任务调度测试</h1>
+<table>
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>cron表达式</td>
+        <td>状态</td>
+        <td>上次执行时间</td>
+        <td>下次执行时间</td>
+        <td>操作</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cron,iterStat :${cronList}">
+        <td th:text="${cron.id}"></td>
+        <td th:text="${cron.cron}"></td>
+        <td th:text="${cron.status} == 1 ? '正常':'暂停'"></td>
+        <td th:text="${cron.lastTime}"></td>
+        <td th:text="${cron.nextTime}"></td>
+        <td>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               th:cron="${cron.cron}"
+               onclick="updateById(this)">编辑</a>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               th:cron="${cron.cron}"
+               onclick="start(this)">开始</a>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               th:cron="${cron.cron}"
+               onclick="stop(this)">暂停</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+<script type="text/javascript">
+    var AppConsts = {
+        ENABLED: 1,
+        DISABLED: 2
+    }
+
+    function updateById(aObj) {
+        let id = aObj.getAttribute("id");
+        let cron = aObj.getAttribute("cron");
+        let newCron = window.prompt("请输入新的表达式:", cron);
+        if (newCron === null || newCron === '') {
+            return;
+        }
+        let formData = new FormData();
+        formData.append("cron", newCron);
+        formData.append("id", id);
+        post("/schedule/updateById", "/schedule/list", formData);
+        window.location.reload()
+    }
+
+    function start(aObj) {
+        let id = aObj.getAttribute("id");
+        let formData = new FormData();
+        formData.append("id", id);
+        post("/schedule/start", "/schedule/list", formData);
+        window.location.reload()
+    }
+
+    function stop(aObj) {
+        let id = aObj.getAttribute("id");
+        let formData = new FormData();
+        formData.append("id", id);
+        post("/schedule/stop", "/schedule/list", formData);
+        window.location.reload()
+    }
+
+    function post(reqUrl, successUrl, formData) {
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+                var resJson = JSON.parse(xhr.responseText);
+                alert(resJson.msg);
+                if (resJson.code !== 0) {
+                    return;
+                }
+                location.href = successUrl;
+            } else {
+                console.log("Request was unsuccessful: " + xhr.status);
+            }
+        };
+        xhr.open("post", reqUrl, false);
+        xhr.send(formData);
+    }
+</script>
+</html>

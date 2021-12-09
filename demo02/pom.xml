@@ -9,19 +9,13 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.snow</groupId>
-    <artifactId>schedule</artifactId>
+    <artifactId>demo02</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>schedule</name>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>demo01</module>
-        <module>demo02</module>
-        <module>demo03</module>
-    </modules>
-<!--    <properties>-->
-<!--        <java.version>1.8</java.version>-->
-<!--    </properties>-->
+    <name>demo02</name>
+    <description>demo02</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -38,7 +32,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <!--引入数据库的相关依赖-->
         <dependency>
             <groupId>com.baomidou</groupId>

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>定时任务测试</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<style type="text/css">
+    body {
+        width: 80%;
+        text-align: center;
+        margin: auto;
+    }
+
+    table {
+        text-align: center;
+        width: 100%;
+    }
+
+    a {
+        border: 1px black solid;
+        color: white;
+        margin: 3px;
+        background-color: cornflowerblue;
+    }
+</style>
+<body>
+<h1>任务调度测试</h1>
+<table>
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>任务描述</td>
+        <td>group</td>
+        <td>name</td>
+        <td>触发器id</td>
+        <td>操作</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cron,iterStat :${jobDetailList}">
+        <td th:text="${cron.id}"></td>
+        <td th:text="${cron.description}"></td>
+        <td th:text="${cron.jobGroup}"></td>
+        <td th:text="${cron.jobName}"></td>
+        <td th:text="${cron.triggerId}"></td>
+<!--        <td>-->
+<!--            <select >-->
+<!--                <option value="1">1</option>-->
+<!--                <option value="2">2</option>-->
+<!--                <option value="3">3</option>-->
+<!--            </select>-->
+<!--        </td>-->
+        <td>
+            <a style="cursor: pointer"
+               th:id="${cron.id}"
+               th:triggerId="${cron.triggerId}"
+               onclick="updateJobById(this)">编辑</a>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               onclick="start(this)">开始</a>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               th:cron="${cron.description}"
+               onclick="stop(this)">暂停</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<h1>触发器</h1>
+<table>
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>group</td>
+        <td>name</td>
+        <td>cron表达式</td>
+        <td>操作</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cron,iterStat :${triggerList}">
+        <td th:text="${cron.id}"></td>
+        <td th:text="${cron.cron}"></td>
+        <td th:text="${cron.group}"></td>
+        <td th:text="${cron.name}"></td>
+        <td>
+            <a style="cursor: pointer" th:id="${cron.id}"
+               th:cron="${cron.cron}"
+               onclick="updateTriggerById(this)">编辑</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+<script type="text/javascript">
+    var AppConsts = {
+        ENABLED: 1,
+        DISABLED: 2
+    }
+    function updateTriggerById(aObj) {
+        let id = aObj.getAttribute("id");
+        let cron = aObj.getAttribute("cron");
+        let newCron = window.prompt("请输入新的表达式:", cron);
+        if (newCron === null || newCron === '') {
+            return;
+        }
+        let formData = new FormData();
+        formData.append("cron", newCron);
+        formData.append("id", id);
+        post("/my/trigger/updateById", "/my/list", formData);
+        window.location.reload()
+    }
+
+    function updateJobById(aObj) {
+        let id = aObj.getAttribute("id");
+        let triggerId = aObj.getAttribute("triggerId");
+        let newTriggerId = window.prompt("请输入触发器Id:", triggerId);
+        if (newTriggerId === null || newTriggerId === 0) {
+            return;
+        }
+        let formData = new FormData();
+        formData.append("triggerId", newTriggerId);
+        formData.append("id", id);
+        post("/my/job/updateById", "/my/list", formData);
+        window.location.reload()
+    }
+
+    function start(aObj) {
+        let id = aObj.getAttribute("id");
+        let formData = new FormData();
+        formData.append("id", id);
+        post("/my/start", "/my/list", formData);
+        window.location.reload()
+    }
+
+    function stop(aObj) {
+        let id = aObj.getAttribute("id");
+        let formData = new FormData();
+        formData.append("id", id);
+        post("/my/stop", "/my/list", formData);
+        window.location.reload()
+    }
+
+    function post(reqUrl, successUrl, formData) {
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+                var resJson = JSON.parse(xhr.responseText);
+                alert(resJson.msg);
+                if (resJson.code !== 0) {
+                    return;
+                }
+                location.href = successUrl;
+            } else {
+                console.log("Request was unsuccessful: " + xhr.status);
+            }
+        };
+        xhr.open("post", reqUrl, false);
+        xhr.send(formData);
+    }
+</script>
+</html>
